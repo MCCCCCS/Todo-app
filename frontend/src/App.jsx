@@ -12,10 +12,10 @@ function App() {
   // Fetch all todos
   const fetchTodos = async () => {
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
-      setTodos(data);
+      const response = await fetch(API_URL);                      // Send request to backend
+      if (!response.ok) throw new Error('Failed to fetch');       // Check if successful
+      const data = await response.json();                         // Convert response to JavaScript array
+      setTodos(data);                                             // Update the list on screen
     } catch (err) {
       console.error('❌ Error fetching todos:', err);
       setError('Failed to load tasks. Is the backend running?');
@@ -24,36 +24,35 @@ function App() {
 
   // Add new todo
   const addTodo = async (e) => {
-    e.preventDefault();
-    const text = inputValue.trim();
-    if (!text) return;
+  e.preventDefault();                               // Prevent page refresh
+  const text = inputValue.trim();                   // Remove extra spaces
+  if (!text) return;                                // Don't add empty tasks
 
-    setLoading(true);
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
+  setLoading(true);
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',                               // Tell backend: "Create new"
+      headers: { 'Content-Type': 'application/json' }, // Say we're sending JSON
+      body: JSON.stringify({ text }),               // Send the task text
+    });
 
-      if (!response.ok) throw new Error('Failed to add todo');
+    if (!response.ok) throw new Error('Failed to add todo');
 
-      setInputValue('');
-      await fetchTodos();
-    } catch (err) {
-      console.error('❌ Error adding todo:', err);
-      setError('Failed to add task. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setInputValue('');                              // Clear input box
+    await fetchTodos();                             // Refresh the list
+  } catch (err) {
+    setError('Failed to add task. Please try again.');
+  } finally {
+    setLoading(false);                              // Stop loading animation
+  }
+};
 
   // Toggle completion
   const toggleTodo = async (id) => {
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: 'PUT' });
       if (!response.ok) throw new Error('Failed to toggle');
-      await fetchTodos();
+      await fetchTodos();                                         // Refresh list
     } catch (err) {
       setError('Failed to update task.');
     }
@@ -61,7 +60,7 @@ function App() {
 
   // Delete todo
   const deleteTodo = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    if (!window.confirm('Are you sure you want to delete this task?')) return;       // Ask for confirmation
 
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
@@ -74,11 +73,11 @@ function App() {
 
   // Load todos on mount + auto-refresh
   useEffect(() => {
-    fetchTodos();
-
-    const interval = setInterval(fetchTodos, 30000); // every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
+    fetchTodos();                                     // Load on start
+    
+    const interval = setInterval(fetchTodos, 30000); // Auto refresh every 30 seconds
+    return () => clearInterval(interval);             // Cleanup when component unmounts
+    }, []);                                             // Empty [] = run only once on mount                                            // Empty [] = run only once on mount
 
   const total = todos.length;
   const completed = todos.filter(t => t.completed).length;
